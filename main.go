@@ -17,7 +17,8 @@ func (file *File) Modify() {
 	writeByte := make([]byte, 4)
 	for _, v := range file.PathList {
 		// 打开文件
-		f, err := os.OpenFile(file.Path + v, os.O_RDWR, 0644)
+		oldName := file.Path + v
+		f, err := os.OpenFile(oldName, os.O_RDWR, 0644)
 		if err != nil {
 			fmt.Println("error:", err)
 		}
@@ -36,14 +37,13 @@ func (file *File) Modify() {
 			fmt.Println("error:", err)
 		}
 		f.Close()
-		oldName := file.Path + v
-		fmt.Println(oldName)
 		// 判断文件格式
 		if strings.HasSuffix(oldName, ".png") {
 			os.Rename(oldName, oldName[:len(oldName) - 4]) // 恢复原文件名
 		} else {
 			os.Rename(oldName, oldName + ".png")	// 原文件名 + .png
 		}
+		fmt.Println(oldName)
 	}
 }
 
