@@ -69,13 +69,21 @@ func (file *File) getFileInfo() {
 // 处理带空格的路径
 func (file *File) getPath() {
 	var tmp string
-	fmt.Print("Path:")
-	for {
-		n, _ := fmt.Scanf("%s", &tmp)
-		if n == 0 {
-			break
+	args := os.Args
+	// 如果软件启动参数>=2个，就以参数的形式获取要修改的文件或文件夹的路径
+	if len(args) >= 2 {
+		for i := 1; i < len(args); i++ {
+			file.Path += args[i] + " "
 		}
-		file.Path += tmp + " "
+	} else {
+		fmt.Print("Path:")
+		for {
+			n, _ := fmt.Scanf("%s", &tmp)
+			if n == 0 {
+				break
+			}
+			file.Path += tmp + " "
+		}
 	}
 	file.Path = strings.TrimSpace(file.Path)
 }
