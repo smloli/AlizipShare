@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"io/ioutil"
+	"time"
 )
 
 type File struct {
@@ -15,6 +16,8 @@ type File struct {
 func (file *File) Modify() {
 	readByte := make([]byte, 4)
 	writeByte := make([]byte, 4)
+	loliByte := make([]byte, 4)
+	var loli string
 	for _, v := range file.PathList {
 		// 打开文件
 		oldName := file.Path + v
@@ -22,19 +25,51 @@ func (file *File) Modify() {
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		// 读取文件头4个字节的内容，将内容赋值给readByte
+		// 读取文件头4个字节内容
 		_, err = f.ReadAt(readByte, 0)
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		// // readByte 异或 0xF，将结果赋值给writeByte
+		// 读取文件尾4个字节内容
+		fileInfo, _ := f.Stat()
+		_, err = f.ReadAt(loliByte, fileInfo.Size() - 4)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		// loliByte转换成字符串
+		for _, v := range loliByte {
+			loli += string(v)
+		}
+		fmt.Println("loliByte = ", loliByte)
+		// readByte异或0xF
 		for i, v := range readByte {
 			writeByte[i] = v ^ 0xF
 		}
-		// 向文件头写入writeByte，长度为4个字节
+		// 文件头写入writeByte
 		_, err = f.WriteAt(writeByte, 0)
 		if err != nil {
 			fmt.Println("error:", err)
+		}
+
+		// 取纳秒时间戳
+		timestamp := fmt.Sprintf("%d%s", time.Now().UnixNano(), "loli")
+		// 将时间戳转换成[]byte
+		zeroByte := []byte{0,0,0,0,0,0,0,0,0}
+		timestampByte := append(zeroByte, []byte(timestamp)...)
+
+		// 当变量loli的值 == loli，直接重写时间戳，不再追加写入
+		if loli != "loli" {
+			// 写入timestampByte
+			_, err = f.WriteAt(timestampByte, fileInfo.Size())
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+		} else {
+			// 重写timestampByte
+			_, err = f.WriteAt(timestampByte, fileInfo.Size() - 32)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
 		}
 		f.Close()
 		// 判断文件格式
